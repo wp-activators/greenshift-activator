@@ -5,7 +5,7 @@
  * Plugin Name:       GreenShift Activator
  * Plugin URI:        https://github.com/wp-activators/greenshift-activator
  * Description:       GreenShift Plugin Activator
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 5.9.0
  * Requires PHP:      7.2
  * Author:            mohamedhk2
@@ -13,17 +13,18 @@
  **/
 
 defined( 'ABSPATH' ) || exit;
-const GREENSHIFT_ACTIVATOR_NAME   = 'GreenShift Activator';
-const GREENSHIFT_ACTIVATOR_DOMAIN = 'greenshift-activator';
-require_once __DIR__ . DIRECTORY_SEPARATOR . 'functions.php';
+$GREENSHIFT_ACTIVATOR_NAME   = 'GreenShift Activator';
+$GREENSHIFT_ACTIVATOR_DOMAIN = 'greenshift-activator';
+$functions                   = require_once __DIR__ . DIRECTORY_SEPARATOR . 'functions.php';
+extract( $functions );
 if (
-	activator_admin_notice_ignored()
-	|| activator_admin_notice_plugin_install( 'greenshift-animation-and-page-builder-blocks/plugin.php', 'greenshift-animation-and-page-builder-blocks', 'Greenshift', GREENSHIFT_ACTIVATOR_NAME, GREENSHIFT_ACTIVATOR_DOMAIN )
-	|| activator_admin_notice_plugin_activate( 'greenshift-animation-and-page-builder-blocks/plugin.php', GREENSHIFT_ACTIVATOR_NAME, GREENSHIFT_ACTIVATOR_DOMAIN )
+	$activator_admin_notice_ignored()
+	|| $activator_admin_notice_plugin_install( 'greenshift-animation-and-page-builder-blocks/plugin.php', 'greenshift-animation-and-page-builder-blocks', 'Greenshift', $GREENSHIFT_ACTIVATOR_NAME, $GREENSHIFT_ACTIVATOR_DOMAIN )
+	|| $activator_admin_notice_plugin_activate( 'greenshift-animation-and-page-builder-blocks/plugin.php', $GREENSHIFT_ACTIVATOR_NAME, $GREENSHIFT_ACTIVATOR_DOMAIN )
 ) {
 	return;
 }
-add_filter( 'pre_http_request', function ( $pre, $parsed_args, $url ) {
+add_filter( 'pre_http_request', function ( $pre, $parsed_args, $url ) use ( $activator_json_response ) {
 	$STORE_URL = defined( EDD_GSPB_STORE_URL ) ? EDD_GSPB_STORE_URL : 'https://shop.greenshiftwp.com/';
 	if ( str_starts_with( $url, $STORE_URL ) ) {
 		switch ( $parsed_args['body']['edd_action'] ?? false ) {
@@ -37,23 +38,23 @@ add_filter( 'pre_http_request', function ( $pre, $parsed_args, $url ) {
 					'license'       => 'free4all',
 				];
 
-				return activator_json_response( $data );
+				return $activator_json_response( $data );
 			case 'deactivate_license':
 
-				return activator_json_response( [] );
+				return $activator_json_response( [] );
 		}
 	}
 
 	return $pre;
 }, 99, 3 );
-add_action( 'plugins_loaded', function () {
+add_action( 'plugins_loaded', function () use ( $activator_private_property ) {
 	$elp = new EddLicensePage;
 	remove_action( 'admin_menu', [ $elp, 'edd_license_menu' ], 999 );
 	remove_action( 'admin_init', [ $elp, 'edd_register_option' ] );
 	remove_action( 'admin_init', [ $elp, 'edd_activate_license' ] );
 	remove_action( 'admin_init', [ $elp, 'edd_deactivate_license' ] );
 	remove_action( 'admin_notices', [ $elp, 'edd_admin_notices' ] );
-	$licensesData = activator_private_property( $elp, 'licensesData' );
+	$licensesData = $activator_private_property( $elp, 'licensesData' );
 	try {
 		foreach ( $licensesData as $plugin => $license ) {
 			$licensesData[ $plugin ]['license']       = 'free4all';
