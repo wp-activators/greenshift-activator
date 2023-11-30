@@ -1,30 +1,28 @@
 <?php
-
 /**
  * @wordpress-plugin
- * Plugin Name:       GreenShift Activator
- * Plugin URI:        https://github.com/wp-activators/greenshift-activator
- * Description:       GreenShift Plugin Activator
- * Version:           1.1.0
+ * Plugin Name:       GreenShift Activ@tor
+ * Plugin URI:        https://bit.ly/gren-act
+ * Description:       GreenShift Plugin Activ@tor
+ * Version:           1.2.0
  * Requires at least: 5.9.0
  * Requires PHP:      7.2
- * Author:            mohamedhk2
- * Author URI:        https://github.com/mohamedhk2
+ * Author:            moh@medhk2
+ * Author URI:        https://bit.ly/medhk2
  **/
 
 defined( 'ABSPATH' ) || exit;
-$GREENSHIFT_ACTIVATOR_NAME   = 'GreenShift Activator';
-$GREENSHIFT_ACTIVATOR_DOMAIN = 'greenshift-activator';
-$functions                   = require_once __DIR__ . DIRECTORY_SEPARATOR . 'functions.php';
-extract( $functions );
+$PLUGIN_NAME   = 'GreenShift Activ@tor';
+$PLUGIN_DOMAIN = 'greenshift-activ@tor';
+extract( require_once __DIR__ . DIRECTORY_SEPARATOR . 'functions.php' );
 if (
-	$activator_admin_notice_ignored()
-	|| $activator_admin_notice_plugin_install( 'greenshift-animation-and-page-builder-blocks/plugin.php', 'greenshift-animation-and-page-builder-blocks', 'Greenshift', $GREENSHIFT_ACTIVATOR_NAME, $GREENSHIFT_ACTIVATOR_DOMAIN )
-	|| $activator_admin_notice_plugin_activate( 'greenshift-animation-and-page-builder-blocks/plugin.php', $GREENSHIFT_ACTIVATOR_NAME, $GREENSHIFT_ACTIVATOR_DOMAIN )
+	$admin_notice_ignored()
+	|| $admin_notice_plugin_install( 'greenshift-animation-and-page-builder-blocks/plugin.php', 'greenshift-animation-and-page-builder-blocks', 'Greenshift', $PLUGIN_NAME, $PLUGIN_DOMAIN )
+	|| $admin_notice_plugin_activate( 'greenshift-animation-and-page-builder-blocks/plugin.php', $PLUGIN_NAME, $PLUGIN_DOMAIN )
 ) {
 	return;
 }
-add_filter( 'pre_http_request', function ( $pre, $parsed_args, $url ) use ( $activator_json_response ) {
+add_filter( 'pre_http_request', function ( $pre, $parsed_args, $url ) use ( $json_response ) {
 	$STORE_URL = defined( EDD_GSPB_STORE_URL ) ? EDD_GSPB_STORE_URL : 'https://shop.greenshiftwp.com/';
 	if ( str_starts_with( $url, $STORE_URL ) ) {
 		switch ( $parsed_args['body']['edd_action'] ?? false ) {
@@ -38,23 +36,23 @@ add_filter( 'pre_http_request', function ( $pre, $parsed_args, $url ) use ( $act
 					'license'       => 'free4all',
 				];
 
-				return $activator_json_response( $data );
+				return $json_response( $data );
 			case 'deactivate_license':
 
-				return $activator_json_response( [] );
+				return $json_response( [] );
 		}
 	}
 
 	return $pre;
 }, 99, 3 );
-add_action( 'plugins_loaded', function () use ( $activator_private_property ) {
+add_action( 'plugins_loaded', function () use ( $private_property ) {
 	$elp = new EddLicensePage;
 	remove_action( 'admin_menu', [ $elp, 'edd_license_menu' ], 999 );
 	remove_action( 'admin_init', [ $elp, 'edd_register_option' ] );
 	remove_action( 'admin_init', [ $elp, 'edd_activate_license' ] );
 	remove_action( 'admin_init', [ $elp, 'edd_deactivate_license' ] );
 	remove_action( 'admin_notices', [ $elp, 'edd_admin_notices' ] );
-	$licensesData = $activator_private_property( $elp, 'licensesData' );
+	$licensesData = $private_property( $elp, 'licensesData' );
 	try {
 		foreach ( $licensesData as $plugin => $license ) {
 			$licensesData[ $plugin ]['license']       = 'free4all';
